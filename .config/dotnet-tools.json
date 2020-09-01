@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "neo.express3": {
-      "version": "1.2.23-insiders",
+      "version": "1.2.42-insiders-gdd35085298",
       "commands": [
         "nxp3"
       ]

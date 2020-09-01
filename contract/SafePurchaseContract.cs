@@ -77,12 +77,6 @@ namespace SafePurchaseSample
             return true;
         }
 
-        public static SaleInfo GetSale(byte[] saleId)
-        {
-            StorageMap salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);
-            var result = salesMap.Get(saleId);
-            return result.Deserialize() as SaleInfo;
-        }
         private static BigInteger GetTransactionAmount(Notification notification, byte[] scriptHash)
         {
             if (notification.ScriptHash != scriptHash) return 0;
