@@ -8,3 +8,6 @@ dotnet nxp3 contract invoke ./invoke-files/create-sale.neo-invoke.json seller
 dotnet nxp3 checkpoint create checkpoints/buyer-deposit -f
 dotnet nxp3 contract invoke ./invoke-files/buyer-deposit.neo-invoke.json buyer
 dotnet nxp3 checkpoint create checkpoints/confirm-shipment -f
+dotnet nxp3 contract invoke ./invoke-files/confirm-shipment.neo-invoke.json seller
+dotnet nxp3 checkpoint create checkpoints/confirm-received -f
+dotnet nxp3 contract invoke ./invoke-files/confirm-received.neo-invoke.json buyer

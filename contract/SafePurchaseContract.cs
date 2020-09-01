@@ -126,6 +126,22 @@ namespace SafePurchaseSample
             return true;
         }
 
+        public static bool ConfirmReceived(byte[] saleId)
+        {
+            var saleInfo = GetSale(saleId);
+            if (saleInfo == null) throw new Exception("could not find sale");
+            if (saleInfo.State != SaleState.ShipmentConfirmed) throw new Exception("sale state incorrect");
+
+            if (!Runtime.CheckWitness(saleInfo.Buyer)) throw new Exception("must be buyer to confirm receipt");
+
+            Contract.Call(GasToken, "transfer", new object[] { ExecutionEngine.ExecutingScriptHash, saleInfo.Buyer, saleInfo.Price });
+            Contract.Call(GasToken, "transfer", new object[] { ExecutionEngine.ExecutingScriptHash, saleInfo.Seller, saleInfo.Price * 3 });
+
+            DeleteSale(saleInfo);
+            OnSaleCompleted(saleInfo.Id);
+            return true;
+        }
+        
         private static SaleInfo GetSale(byte[] saleId)
         {
             if (saleId.Length != 16)
@@ -143,6 +159,13 @@ namespace SafePurchaseSample
             var salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);
             salesMap.Put(saleInfo.Id, saleInfo.Serialize());
         }
+
+        private static void DeleteSale(SaleInfo saleInfo)
+        {
+            var salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);
+            salesMap.Delete(saleInfo.Id);
+        }
+
 
         private static BigInteger GetTransactionAmount(Notification notification, byte[] scriptHash)
         {
