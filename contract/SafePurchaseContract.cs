@@ -51,9 +51,11 @@ namespace SafePurchaseSample
         [DisplayName("SaleCompleted")]
         public static event Action<byte[]> OnSaleCompleted;
 
-        public static bool CreateSale(BigInteger price, string description)
+        public static bool CreateSale(byte[] saleId, BigInteger price, string description)
         {
             if (price <= 0) throw new Exception("price must be larger than zero");
+            if (saleId.Length != 16) throw new Exception("sale ID must be 16 bytes long");
+            if (GetSale(saleId) != null) throw new Exception("sale with that ID already exists");
 
             var notifications = Runtime.GetNotifications();
             if (notifications.Length == 0) throw new Exception("Contribution transaction not found.");
@@ -69,16 +71,14 @@ namespace SafePurchaseSample
             var tx = (Transaction)ExecutionEngine.ScriptContainer;
             var saleInfo = new SaleInfo()
             {
-                Id = tx.Hash,
+                Id = saleId,
                 Seller = tx.Sender,
                 Description = description,
                 Price = price,
                 State = SaleState.New,
             };
 
-            var salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);
-            salesMap.Put(saleInfo.Id, saleInfo.Serialize());
-
+            SaveSale(saleInfo);
             OnNewSale(saleInfo.Id, saleInfo.Seller, saleInfo.Description, saleInfo.Price);
             return true;
         }
@@ -104,24 +104,44 @@ namespace SafePurchaseSample
             saleInfo.Buyer = tx.Sender;
             saleInfo.State = SaleState.AwaitingShipment;
 
-            var salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);
-            salesMap.Put(saleInfo.Id, saleInfo.Serialize());
-
+            SaveSale(saleInfo);
             OnSaleUpdated(saleInfo.Id, saleInfo.Buyer, (byte)saleInfo.State);
+            return true;
+        }        
+        
+        public static bool ConfirmShipment(byte[] saleId)
+        {
+            var saleInfo = GetSale(saleId);
+            if (saleInfo == null) throw new Exception("could not find sale");
+            if (saleInfo.State != SaleState.AwaitingShipment) throw new Exception("sale state incorrect");
+
+            if (saleInfo.Buyer == null) throw new Exception("buyer not specified");
+
+            if (!Runtime.CheckWitness(saleInfo.Seller)) throw new Exception("must be seller to confirm shipment");
+
+            saleInfo.State = SaleState.ShipmentConfirmed;
+
+            SaveSale(saleInfo);
+            OnSaleUpdated(saleInfo.Id, null, (byte)saleInfo.State);
             return true;
         }
 
         private static SaleInfo GetSale(byte[] saleId)
         {
-            if (saleId.Length != 32)
+            if (saleId.Length != 16)
             {
-                throw new ArgumentException("The saleId parameter txid MUST be 32-byte transaction hash.", nameof(saleId));
+                throw new ArgumentException("The saleId parameter MUST be 16 bytes long.", nameof(saleId));
             }
 
             var salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);
             var result = salesMap.Get(saleId);
-            if (result.Length == 0) return null;
-            return result.Deserialize() as SaleInfo;
+            return result == null ? null : result.Deserialize() as SaleInfo;
+        }
+
+        private static void SaveSale(SaleInfo saleInfo)
+        {
+            var salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);
+            salesMap.Put(saleInfo.Id, saleInfo.Serialize());
         }
 
         private static BigInteger GetTransactionAmount(Notification notification, byte[] scriptHash)
