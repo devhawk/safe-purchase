@@ -10,8 +10,22 @@
             "request": "launch",
             "program": "${workspaceFolder}/contract/bin/Debug/netstandard2.1/safe-purchase.nef",
             "invoke-file": "${workspaceFolder}/invoke-files/create-sale.neo-invoke.json",
-            "checkpoint": "${workspaceFolder}/checkpoints/createSale.nxp3-checkpoint",
+            "checkpoint": "${workspaceFolder}/checkpoints/create-sale.nxp3-checkpoint",
             "signers": [ "NajmT8yKhtCcM48K8eCo8daWFtdgCTfmuR" ],
+            "runtime": {
+                "witnesses": {
+                    "check-result": true
+                }
+            }
+        },
+        {
+            "name": "buyer-deposit",
+            "type": "neo-contract",
+            "request": "launch",
+            "program": "${workspaceFolder}/contract/bin/Debug/netstandard2.1/safe-purchase.nef",
+            "invoke-file": "${workspaceFolder}/invoke-files/buyer-deposit.neo-invoke.json",
+            "checkpoint": "${workspaceFolder}/checkpoints/buyer-deposit.nxp3-checkpoint",
+            "signers": [ "NaYLUBF9TuBrkXWHDcefRi3rAr4jBtYwyG" ],
             "runtime": {
                 "witnesses": {
                     "check-result": true

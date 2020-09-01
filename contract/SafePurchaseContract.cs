@@ -12,7 +12,7 @@ using Neo.SmartContract.Framework.Services.System;
 
 namespace SafePurchaseSample
 {
-    public enum SaleState
+    public enum SaleState : byte
     {
         New,
         AwaitingShipment,
@@ -45,6 +45,12 @@ namespace SafePurchaseSample
         [DisplayName("NewSale")]
         public static event Action<byte[], byte[], string, BigInteger> OnNewSale;
 
+        [DisplayName("SaleUpdated")]
+        public static event Action<byte[], byte[], byte> OnSaleUpdated;
+
+        [DisplayName("SaleCompleted")]
+        public static event Action<byte[]> OnSaleCompleted;
+
         public static bool CreateSale(BigInteger price, string description)
         {
             if (price <= 0) throw new Exception("price must be larger than zero");
@@ -60,7 +66,7 @@ namespace SafePurchaseSample
 
             if (gas != price * 2) throw new Exception("seller deposit must be 2x price");
             
-            Transaction tx = (Transaction)ExecutionEngine.ScriptContainer;
+            var tx = (Transaction)ExecutionEngine.ScriptContainer;
             var saleInfo = new SaleInfo()
             {
                 Id = tx.Hash,
@@ -70,11 +76,52 @@ namespace SafePurchaseSample
                 State = SaleState.New,
             };
 
-            StorageMap salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);
+            var salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);
             salesMap.Put(saleInfo.Id, saleInfo.Serialize());
 
             OnNewSale(saleInfo.Id, saleInfo.Seller, saleInfo.Description, saleInfo.Price);
             return true;
+        }
+
+        public static bool BuyerDeposit(byte[] saleId)
+        {
+            var saleInfo = GetSale(saleId);
+            if (saleInfo == null) throw new Exception("could not find sale");
+            if (saleInfo.State != SaleState.New) throw new Exception("sale state incorrect");
+
+            var notifications = Runtime.GetNotifications();
+            if (notifications.Length == 0) throw new Exception("Contribution transaction not found.");
+
+            BigInteger gas = 0;
+            for (int i = 0; i < notifications.Length; i++)
+            {
+                gas += GetTransactionAmount(notifications[i], GasToken);
+            }
+
+            if (gas != saleInfo.Price * 2) throw new Exception("buyer deposit must be 2x price");
+
+            var tx = (Transaction)ExecutionEngine.ScriptContainer;
+            saleInfo.Buyer = tx.Sender;
+            saleInfo.State = SaleState.AwaitingShipment;
+
+            var salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);
+            salesMap.Put(saleInfo.Id, saleInfo.Serialize());
+
+            OnSaleUpdated(saleInfo.Id, saleInfo.Buyer, (byte)saleInfo.State);
+            return true;
+        }
+
+        private static SaleInfo GetSale(byte[] saleId)
+        {
+            if (saleId.Length != 32)
+            {
+                throw new ArgumentException("The saleId parameter txid MUST be 32-byte transaction hash.", nameof(saleId));
+            }
+
+            var salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);
+            var result = salesMap.Get(saleId);
+            if (result.Length == 0) return null;
+            return result.Deserialize() as SaleInfo;
         }
 
         private static BigInteger GetTransactionAmount(Notification notification, byte[] scriptHash)

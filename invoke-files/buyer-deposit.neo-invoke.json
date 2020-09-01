@@ -1,0 +1,18 @@
+[
+    {
+        "contract": "0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc",
+        "operation": "transfer",
+        "args": [
+            "@NaYLUBF9TuBrkXWHDcefRi3rAr4jBtYwyG",
+            "#../contract/bin/Debug/netstandard2.1/safe-purchase.nef",
+            100
+        ]
+    },
+    {
+        "contract": "../contract/bin/Debug/netstandard2.1/safe-purchase.nef",
+        "operation": "buyerDeposit",
+        "args": [
+            "#0xa98d29da393250b8fdb18cad404a1c17692d9f2e63f63f19c45bbf985aa25b95"
+        ]
+    }
+]
