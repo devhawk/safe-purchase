@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/contract/bin/Debug/netstandard2.1/safe-purchase.nef",
             "invoke-file": "${workspaceFolder}/invoke-files/create-sale.neo-invoke.json",
-            "checkpoint": "${workspaceFolder}/createSale.nxp3-checkpoint",
+            "checkpoint": "${workspaceFolder}/checkpoints/createSale.nxp3-checkpoint",
             "signers": [ "NajmT8yKhtCcM48K8eCo8daWFtdgCTfmuR" ],
             "runtime": {
                 "witnesses": {
