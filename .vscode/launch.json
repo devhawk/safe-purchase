@@ -31,6 +31,20 @@
                     "check-result": true
                 }
             }
+        },
+        {
+            "name": "confirm-shipment",
+            "type": "neo-contract",
+            "request": "launch",
+            "program": "${workspaceFolder}/contract/bin/Debug/netstandard2.1/safe-purchase.nef",
+            "invoke-file": "${workspaceFolder}/invoke-files/confirm-shipment.neo-invoke.json",
+            "checkpoint": "${workspaceFolder}/checkpoints/confirm-shipment.nxp3-checkpoint",
+            "signers": [ "NajmT8yKhtCcM48K8eCo8daWFtdgCTfmuR" ],
+            "runtime": {
+                "witnesses": {
+                    "check-result": true
+                }
+            }
         }
     ]
 }
