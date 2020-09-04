@@ -59,7 +59,7 @@ namespace SafePuchaseWeb.Controllers
         public async Task<IActionResult> CreateSale([Bind("Description,Price,SaleId")] CreateSaleViewModel model)
         {
             InitializeProtocolSettings(2076676759);
-            
+
             if (!ModelState.IsValid)
             {
                 return View(model); 
@@ -73,23 +73,23 @@ namespace SafePuchaseWeb.Controllers
             {
                 using var sb = new ScriptBuilder();
                 sb.EmitAppCall(NativeContract.GAS.Hash, "transfer", seller, contract, price * 2);
-                // sb.EmitAppCall(contract, "createSale", model.SaleId.ToByteArray(), price, model.Description);
+                sb.EmitAppCall(contract, "createSale", model.SaleId.ToByteArray(), price, model.Description);
                 script = sb.ToArray();
             }
 
             var keyPair = new KeyPair("b6e3d15d08dfd11cc43aca3c7bdb029d86c10014369749a300b9b3e9b5fef790".HexToBytes());
             var signers = new[] { new Signer { Account = seller, Scopes = WitnessScope.CalledByEntry }};
 
-            // var tx = await Task.Run(() => {
+            var tx = await Task.Run(() => {
                 var tm = new TransactionManager(rpcClient)
                     .MakeTransaction(script, signers)
                     .AddSignature(keyPair)
                     .Sign();
                 rpcClient.SendRawTransaction(tm.Tx);
-                // return ;
-            // });
+                return tm.Tx;
+            });
 
-            model.TransactionHash = tm.Tx.Hash;
+            model.TransactionHash = tx.Hash;
             return View(model);
         }
 
@@ -110,15 +110,23 @@ namespace SafePuchaseWeb.Controllers
 
         public async Task<IActionResult> AppLog(string id)
         {
-            var json = new Neo.IO.Json.JObject();
-            json["question"] = "what is 6 x 9";
-            json["answer"] = 42;
 
-
-            // await Task.Run(() => rpcClient.RpcSend("getapplicationlog", id.ToString()));
+            var json = await GetAppLog();
             ViewBag.TxHash = id;
 
             return View(json);            
+
+            async Task<Neo.IO.Json.JObject> GetAppLog()
+            {
+                try
+                {
+                    return await Task.Run(() => rpcClient.RpcSend("getapplicationlog", id.ToString()));
+                }
+                catch (Exception ex)
+                {
+                    return ex.Message;
+                }
+            }
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -9,9 +9,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/web/bin/Debug/netcoreapp3.1/SafePuchaseWeb.dll",
+            "program": "${workspaceFolder}/web/src/bin/Debug/netcoreapp3.1/SafePuchaseWeb.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/web",
+            "cwd": "${workspaceFolder}/web/src",
             "stopAtEntry": false,
             "serverReadyAction": {
                 "action": "openExternally",
