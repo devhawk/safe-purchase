@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Neo;
 using Neo.Network.P2P.Payloads;
@@ -37,9 +39,27 @@ namespace SafePuchaseWeb.Controllers
             return View(sale);
         }
 
+        static bool InitializeProtocolSettings(long magic)
+        {
+            IEnumerable<KeyValuePair<string, string>> settings()
+            {
+                yield return new KeyValuePair<string, string>(
+                    "ProtocolConfiguration:Magic", $"{magic}");
+            }
+
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(settings())
+                .Build();
+
+            return ProtocolSettings.Initialize(config);
+
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateSale([Bind("Description,Price,SaleId")] CreateSaleViewModel model)
         {
+            InitializeProtocolSettings(2076676759);
+            
             if (!ModelState.IsValid)
             {
                 return View(model); 
@@ -47,7 +67,7 @@ namespace SafePuchaseWeb.Controllers
 
             var seller = "NajmT8yKhtCcM48K8eCo8daWFtdgCTfmuR".ToScriptHash();
             var contract = Neo.UInt160.Parse("0xbb2d2ebee39cfa1edcf94b655e9d9630672d0e6a");
-            var price = model.Price.ToBigInteger(NativeContract.GAS.Decimals);
+            var price = (BigInteger)(long)model.Price; //.ToBigInteger(NativeContract.GAS.Decimals);
 
             Script script;
             {
@@ -65,7 +85,7 @@ namespace SafePuchaseWeb.Controllers
                     .MakeTransaction(script, signers)
                     .AddSignature(keyPair)
                     .Sign();
-                // rpcClient.SendRawTransaction(tm.Tx);
+                rpcClient.SendRawTransaction(tm.Tx);
                 // return ;
             // });
 

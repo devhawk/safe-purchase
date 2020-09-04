@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\official\3neo-monorepo\modules\src\RpcClient\RpcClient.csproj" />
+    <ProjectReference Include="..\..\..\..\..\official\3neo-monorepo\modules\src\RpcClient\RpcClient.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
