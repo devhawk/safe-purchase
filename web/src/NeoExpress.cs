@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -13,14 +14,23 @@ namespace SafePuchaseWeb
         [JsonPropertyName("magic")]
         public uint Magic { get; set; }
 
+        [JsonPropertyName("consensus-nodes")]
+        public IReadOnlyList<ConsensusNode> ConsensusNodes { get; set; } = Array.Empty<ConsensusNode>();
+
         [JsonPropertyName("wallets")]
-        public Wallet[] Wallets { get; set; } = Array.Empty<Wallet>();
+        public IReadOnlyList<Wallet> Wallets { get; set; } = Array.Empty<Wallet>();
 
         public Wallet GetWallet(string name)
         {
             return Wallets.First(w => w.Name == name);
         }
 
+        public class ConsensusNode
+        {
+            [JsonPropertyName("rpc-port")]
+            public ushort RpcPort { get; set; }
+        }
+        
         public class Wallet
         {
             [JsonPropertyName("name")]

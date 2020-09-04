@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace SafePuchaseWeb.Models
 {
+
     public class CreateSaleViewModel : IValidatableObject
     {
         [Required]

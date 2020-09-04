@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -32,22 +33,27 @@ namespace SafePuchaseWeb.Controllers
 
     public class HomeController : Controller
     {
-        private readonly RpcClient rpcClient = new RpcClient("http://localhost:49332");
-
         private readonly NeoExpress neoExpress;
         private readonly ContractManifest contractManifest;
+        private readonly IHttpClientFactory clientFactory;
         private readonly ILogger<HomeController> logger;
+        private readonly RpcClient rpcClient;
 
-        public HomeController(NeoExpress neoExpress, ContractManifest contractManifest, ILogger<HomeController> logger)
+        public HomeController(NeoExpress neoExpress, ContractManifest contractManifest, IHttpClientFactory clientFactory, ILogger<HomeController> logger)
         {
             this.neoExpress = neoExpress;
             this.contractManifest = contractManifest;
+            this.clientFactory = clientFactory;
             this.logger = logger;
+
+            var http = clientFactory.CreateClient();
+            http.BaseAddress = new Uri($"http://localhost:{neoExpress.ConsensusNodes.First().RpcPort}");
+            rpcClient = new RpcClient(http);
         }
 
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction("CreateSale");
         }
 
         public IActionResult CreateSale()
@@ -55,7 +61,6 @@ namespace SafePuchaseWeb.Controllers
             var sale = new CreateSaleViewModel();
             return View(sale);
         }
-
     
         // TODO: remove CalculateHash when https://github.com/neo-project/neo/pull/1902 merges 
         static UInt256 CalculateHash(IVerifiable verifiable, uint magic)
@@ -108,9 +113,25 @@ namespace SafePuchaseWeb.Controllers
             return View(model);
         }
 
-        public IActionResult BuyerDeposit(Guid id)
+        public IActionResult SaleInfo(Guid id)
         {
-            return View(id);
+            Script script;
+            {
+                using var sb = new ScriptBuilder();
+                sb.EmitAppCall(contractManifest.Hash, "retrieveSaleInfo", id.ToByteArray());
+                script = sb.ToArray();
+            }
+
+            var result = rpcClient.InvokeScript(script);
+            if (result.State == VMState.HALT 
+                && result.Stack.Length > 0
+                && result.Stack[0] is Neo.VM.Types.Array array)
+            {
+                var saleInfo = SaleViewModel.FromStackItem(array);
+                return View(saleInfo);
+            }
+            
+            throw new Exception("invalid sale info");
         }
 
         public IActionResult ConfirmShipment()

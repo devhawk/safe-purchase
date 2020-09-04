@@ -34,6 +34,7 @@ namespace SafePuchaseWeb
 
             services.AddSingleton<NeoExpress>(neoExpress);
             services.AddSingleton<ContractManifest>(contractManifest);
+            services.AddHttpClient();
             services.AddControllersWithViews();
         }
 

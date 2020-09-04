@@ -26,7 +26,9 @@
                 "nxp3",
                 "checkpoint",
                 "run",
-                "${workspaceFolder}/checkpoints/create-sale.nxp3-checkpoint"
+                "${workspaceFolder}/checkpoints/create-sale.nxp3-checkpoint",
+                "-s",
+                "5"
             ],
             "presentation": {
                 "reveal": "silent"

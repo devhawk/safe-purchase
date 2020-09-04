@@ -1,0 +1,49 @@
+@model SaleViewModel;
+
+@{
+    ViewData["Title"] = "Sale Info";
+}
+
+<h1 class="display-4">Sale Info</h1>
+
+<table>
+    <tr>
+        <td>Sale ID</td>
+        <td>@Model.SaleId</td>
+    </tr>
+    <tr>
+        <td>Seller</td>
+        <td>@Model.Seller</td>
+    </tr>
+    <tr>
+        <td>Buyer</td>
+        <td>@Model.Buyer</td>
+    </tr>
+    <tr>
+        <td>Description</td>
+        <td>@Model.Description</td>
+    </tr>
+    <tr>
+        <td>Price</td>
+        <td>@Model.Price</td>
+    </tr>
+    <tr>
+        <td>State</td>
+        <td>@Model.State</td>
+    </tr>
+</table>
+
+@if (@Model.State == SaleViewModel.SaleState.New)
+{
+    <div>Proceed to <a asp-action="BuyerDeposit" asp-route-id="@Model.SaleId">Buyer Deposit</a></div>
+}
+
+@if (@Model.State == SaleViewModel.SaleState.AwaitingShipment)
+{
+    <div>Proceed to <a asp-action="ConfirmShipment" asp-route-id="@Model.SaleId">Confirm Shipment</a></div>
+}
+
+@if (@Model.State == SaleViewModel.SaleState.ShipmentConfirmed)
+{
+    <div>Proceed to <a asp-action="ConfirmReceived" asp-route-id="@Model.SaleId">Confirm Received</a></div>
+}
