@@ -28,7 +28,8 @@
 
 @if (@Model.TransactionHash != null)
 {
-    <a asp-action="AppLog" asp-route-id="@Model.TransactionHash">@Model.TransactionHash</a>
+    <div>Proceed to <a asp-action="BuyerDeposit" asp-route-id="@Model.SaleId">Buyer Depost</a></div>
+    <div>View Application Log: <a asp-action="AppLog" asp-route-id="@Model.TransactionHash">@Model.TransactionHash</a></div>
 }
 
 @section Scripts {

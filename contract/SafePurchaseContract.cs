@@ -154,6 +154,8 @@ namespace SafePurchaseSample
             return result == null ? null : result.Deserialize() as SaleInfo;
         }
 
+        public static object RetrieveSaleInfo(byte[] saleId) => GetSale(saleId);
+        
         private static void SaveSale(SaleInfo saleInfo)
         {
             var salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);

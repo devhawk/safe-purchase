@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Neo;
 using Neo.Network.P2P.Payloads;
 using Neo.Network.RPC;
+using Neo.SmartContract.Manifest;
 using Neo.SmartContract.Native;
 using Neo.VM;
 using Neo.Wallets;
@@ -17,15 +18,31 @@ using SafePuchaseWeb.Models;
 
 namespace SafePuchaseWeb.Controllers
 {
+    public static class Extensions
+    {
+        public static TransactionManager AddGas(this TransactionManager transactionManager, decimal gas)
+        {
+            if (transactionManager.Tx != null && gas > 0.0m)
+            {
+                transactionManager.Tx.SystemFee += (long)gas.ToBigInteger(NativeContract.GAS.Decimals);
+            }
+            return transactionManager;
+        }
+    }
+
     public class HomeController : Controller
     {
         private readonly RpcClient rpcClient = new RpcClient("http://localhost:49332");
 
-        private readonly ILogger<HomeController> _logger;
+        private readonly NeoExpress neoExpress;
+        private readonly ContractManifest contractManifest;
+        private readonly ILogger<HomeController> logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(NeoExpress neoExpress, ContractManifest contractManifest, ILogger<HomeController> logger)
         {
-            _logger = logger;
+            this.neoExpress = neoExpress;
+            this.contractManifest = contractManifest;
+            this.logger = logger;
         }
 
         public IActionResult Index()
@@ -64,38 +81,36 @@ namespace SafePuchaseWeb.Controllers
                 return View(model); 
             }
 
-            var seller = "NajmT8yKhtCcM48K8eCo8daWFtdgCTfmuR".ToScriptHash();
-            var contract = Neo.UInt160.Parse("0xbb2d2ebee39cfa1edcf94b655e9d9630672d0e6a");
-            var price = (BigInteger)(long)model.Price; //.ToBigInteger(NativeContract.GAS.Decimals);
+            var seller = neoExpress.GetWallet("seller").Default;
+            var price = model.Price.ToBigInteger(NativeContract.GAS.Decimals);
 
             Script script;
             {
                 using var sb = new ScriptBuilder();
-                sb.EmitAppCall(NativeContract.GAS.Hash, "transfer", seller, contract, price * 2);
-                sb.EmitAppCall(contract, "createSale", model.SaleId.ToByteArray(), price, model.Description);
+                sb.EmitAppCall(NativeContract.GAS.Hash, "transfer", seller.ScriptHash, contractManifest.Hash, price * 2);
+                sb.EmitAppCall(contractManifest.Hash, "createSale", model.SaleId.ToByteArray(), price, model.Description);
                 script = sb.ToArray();
             }
 
-            uint magic = 2076676759;
-            var keyPair = new KeyPair("b6e3d15d08dfd11cc43aca3c7bdb029d86c10014369749a300b9b3e9b5fef790".HexToBytes());
-            var signers = new[] { new Signer { Account = seller, Scopes = WitnessScope.CalledByEntry }};
+            var signers = new[] { new Signer { Account = seller.ScriptHash, Scopes = WitnessScope.CalledByEntry }};
 
             var tx = await Task.Run(() => {
-                var tm = new TransactionManager(rpcClient, magic)
+                var tm = new TransactionManager(rpcClient, neoExpress.Magic)
                     .MakeTransaction(script, signers)
-                    .AddSignature(keyPair)
+                    .AddSignature(seller.KeyPair)
+                    .AddGas(10)
                     .Sign();
                 rpcClient.SendRawTransaction(tm.Tx);
                 return tm.Tx;
             });
 
-            model.TransactionHash = CalculateHash(tx, magic);
+            model.TransactionHash = CalculateHash(tx, neoExpress.Magic);
             return View(model);
         }
 
-        public IActionResult BuyerDeposit()
+        public IActionResult BuyerDeposit(Guid id)
         {
-            return View();
+            return View(id);
         }
 
         public IActionResult ConfirmShipment()
@@ -110,22 +125,23 @@ namespace SafePuchaseWeb.Controllers
 
         public async Task<IActionResult> AppLog(string id)
         {
-
             var json = await GetAppLog();
             ViewBag.TxHash = id;
 
             return View(json);            
 
-            async Task<Neo.IO.Json.JObject> GetAppLog()
+            Task<Neo.IO.Json.JObject> GetAppLog()
             {
-                try
-                {
-                    return rpcClient.RpcSend("getapplicationlog", id.ToString());
-                }
-                catch (Exception ex)
-                {
-                    return ex.Message;
-                }
+                return Task.Run<Neo.IO.Json.JObject>(() => {
+                    try
+                    {
+                        return rpcClient.RpcSend("getapplicationlog", id.ToString());
+                    }
+                    catch (Exception ex)
+                    {
+                        return ex.Message;
+                    }
+                });
             }
         }
 

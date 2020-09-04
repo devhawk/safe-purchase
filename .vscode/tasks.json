@@ -9,9 +9,7 @@
             "type": "shell",
             "args": [
                 "build",
-                // Ask dotnet build to generate full paths for file names.
                 "/property:GenerateFullPaths=true",
-                // Do not generate summary otherwise it leads to duplicate errors in Problems panel
                 "/consoleloggerparameters:NoSummary"
             ],
             "group": "build",
@@ -19,6 +17,21 @@
                 "reveal": "silent"
             },
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "run create-sale checkpoint",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "nxp3",
+                "checkpoint",
+                "run",
+                "${workspaceFolder}/checkpoints/create-sale.nxp3-checkpoint"
+            ],
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": []
         }
     ]
 }

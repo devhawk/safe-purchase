@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -8,9 +8,12 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Neo.SmartContract.Manifest;
 
 namespace SafePuchaseWeb
 {
+
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -23,6 +26,14 @@ namespace SafePuchaseWeb
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            const string NEO_EXPRESS_PATH = @"C:\Users\harry\Source\neo\seattle\samples\safe-purchase\default.neo-express";
+            const string CONTRACT_MANIFEST_PATH = @"C:\Users\harry\Source\neo\seattle\samples\safe-purchase\contract\bin\Debug\netstandard2.1\safe-purchase.manifest.json";
+
+            var neoExpress = NeoExpress.Load(NEO_EXPRESS_PATH);
+            var contractManifest = ContractManifest.Parse(File.ReadAllText(CONTRACT_MANIFEST_PATH));
+
+            services.AddSingleton<NeoExpress>(neoExpress);
+            services.AddSingleton<ContractManifest>(contractManifest);
             services.AddControllersWithViews();
         }
 
