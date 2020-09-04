@@ -1,0 +1,10 @@
+@model Neo.IO.Json.JObject
+@{
+    ViewData["Title"] = "App Log";
+}
+
+<h1 class="display-4">AppLog</h1>
+<h2>@ViewBag.TxHash</h2>
+<code>
+@Model.ToString(true)
+</code>
