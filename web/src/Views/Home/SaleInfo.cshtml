@@ -1,4 +1,4 @@
-@model SaleViewModel;
+@model SaleViewModel?;
 
 @{
     ViewData["Title"] = "Sale Info";
@@ -6,6 +6,12 @@
 
 <h1 class="display-4">Sale Info</h1>
 
+@if (@Model == null) 
+{
+    <div>Sale Not confirmed yet</div>
+}
+else
+{
 <table>
     <tr>
         <td>Sale ID</td>
@@ -46,4 +52,5 @@
 @if (@Model.State == SaleViewModel.SaleState.ShipmentConfirmed)
 {
     <div>Proceed to <a asp-action="ConfirmReceived" asp-route-id="@Model.SaleId">Confirm Received</a></div>
+}
 }

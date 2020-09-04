@@ -12,7 +12,6 @@ namespace SafePuchaseWeb.Models
         public string Description { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public Guid SaleId { get; set; } = Guid.NewGuid();
-        public Neo.UInt256? TransactionHash { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

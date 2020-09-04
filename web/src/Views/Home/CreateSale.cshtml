@@ -26,10 +26,10 @@
     </div>
 </form>
 
-@if (@Model.TransactionHash != null)
+@if (ViewBag.TransactionHash != null)
 {
     <div>Proceed to <a asp-action="SaleInfo" asp-route-id="@Model.SaleId">Sale Info</a></div>
-    <div>View Application Log: <a asp-action="AppLog" asp-route-id="@Model.TransactionHash">@Model.TransactionHash</a></div>
+    <div>View Application Log: <a asp-action="AppLog" asp-route-id="@ViewBag.TransactionHash">@ViewBag.TransactionHash</a></div>
 }
 
 @section Scripts {

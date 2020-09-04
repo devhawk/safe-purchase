@@ -56,28 +56,37 @@ namespace SafePuchaseWeb.Controllers
             return RedirectToAction("CreateSale");
         }
 
+        private async Task<SaleViewModel?> GetSaleViewModel(Guid id)
+        {
+            Script script;
+            {
+                using var sb = new ScriptBuilder();
+                sb.EmitAppCall(contractManifest.Hash, "retrieveSaleInfo", id.ToByteArray());
+                script = sb.ToArray();
+            }
+
+            var result = rpcClient.InvokeScript(script);
+            if (result.State == VMState.HALT 
+                && result.Stack.Length > 0
+                && result.Stack[0] is Neo.VM.Types.Array array)
+            {
+                return SaleViewModel.FromStackItem(array);
+            }
+            
+            return null;
+        }
+
+        public async Task<IActionResult> SaleInfo(Guid id)
+        {
+            return View(await GetSaleViewModel(id));
+        }
+
         public IActionResult CreateSale()
         {
             var sale = new CreateSaleViewModel();
             return View(sale);
         }
     
-        // TODO: remove CalculateHash when https://github.com/neo-project/neo/pull/1902 merges 
-        static UInt256 CalculateHash(IVerifiable verifiable, uint magic)
-        {
-            return new UInt256(Neo.Cryptography.Crypto.Hash256(GetHashData(verifiable, magic)));
-
-            static byte[] GetHashData(IVerifiable verifiable, uint magic)
-            {
-                using var ms = new System.IO.MemoryStream();
-                using var writer = new System.IO.BinaryWriter(ms);
-                writer.Write(magic);
-                verifiable.SerializeUnsigned(writer);
-                writer.Flush();
-                return ms.ToArray();
-            }
-        }
-
         [HttpPost]
         public async Task<IActionResult> CreateSale([Bind("Description,Price,SaleId")] CreateSaleViewModel model)
         {
@@ -109,37 +118,58 @@ namespace SafePuchaseWeb.Controllers
                 return tm.Tx;
             });
 
-            model.TransactionHash = CalculateHash(tx, neoExpress.Magic);
+            ViewBag.TransactionHash = CalculateHash(tx, neoExpress.Magic);
             return View(model);
         }
 
-        public IActionResult SaleInfo(Guid id)
+        public async Task<IActionResult> BuyerDeposit(Guid id)
         {
+            return View(await GetSaleViewModel(id));
+        }
+
+        [HttpPost]
+        [ActionName(nameof(BuyerDeposit))]
+        public async Task<IActionResult> BuyerDepositPost(Guid id)
+        {
+            var model = await GetSaleViewModel(id);
+            if (model == null)
+            {
+                return View(model);
+            }
+
+            var buyer = neoExpress.GetWallet("buyer").Default;
+            var price = model.Price.ChangeDecimals(NativeContract.GAS.Decimals).Value;
+
             Script script;
             {
                 using var sb = new ScriptBuilder();
-                sb.EmitAppCall(contractManifest.Hash, "retrieveSaleInfo", id.ToByteArray());
+                sb.EmitAppCall(NativeContract.GAS.Hash, "transfer", buyer.ScriptHash, contractManifest.Hash, price * 2);
+                sb.EmitAppCall(contractManifest.Hash, "buyerDeposit", id.ToByteArray());
                 script = sb.ToArray();
             }
 
-            var result = rpcClient.InvokeScript(script);
-            if (result.State == VMState.HALT 
-                && result.Stack.Length > 0
-                && result.Stack[0] is Neo.VM.Types.Array array)
-            {
-                var saleInfo = SaleViewModel.FromStackItem(array);
-                return View(saleInfo);
-            }
-            
-            throw new Exception("invalid sale info");
+            var signers = new[] { new Signer { Account = buyer.ScriptHash, Scopes = WitnessScope.CalledByEntry }};
+            var tx = await Task.Run(() => {
+                var tm = new TransactionManager(rpcClient, neoExpress.Magic)
+                    .MakeTransaction(script, signers)
+                    .AddSignature(buyer.KeyPair)
+                    .AddGas(10)
+                    .Sign();
+                rpcClient.SendRawTransaction(tm.Tx);
+                return tm.Tx;
+            });
+
+            ViewBag.TransactionHash = CalculateHash(tx, neoExpress.Magic);
+            return View(model);
         }
 
-        public IActionResult ConfirmShipment()
+
+        public IActionResult ConfirmShipment(Guid id)
         {
             return View();
         }
 
-        public IActionResult ConfirmReceived()
+        public IActionResult ConfirmReceived(Guid id)
         {
             return View();
         }
@@ -170,6 +200,22 @@ namespace SafePuchaseWeb.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        // TODO: remove CalculateHash when https://github.com/neo-project/neo/pull/1902 merges 
+        static UInt256 CalculateHash(IVerifiable verifiable, uint magic)
+        {
+            return new UInt256(Neo.Cryptography.Crypto.Hash256(GetHashData(verifiable, magic)));
+
+            static byte[] GetHashData(IVerifiable verifiable, uint magic)
+            {
+                using var ms = new System.IO.MemoryStream();
+                using var writer = new System.IO.BinaryWriter(ms);
+                writer.Write(magic);
+                verifiable.SerializeUnsigned(writer);
+                writer.Flush();
+                return ms.ToArray();
+            }
         }
     }
 }

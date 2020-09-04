@@ -1,4 +1,4 @@
-﻿@model Guid
+﻿@model SaleViewModel;
 
 @{
     ViewData["Title"] = "Buyer Deposit";
@@ -6,22 +6,50 @@
 
 <h1 class="display-4">Buyer Deposit</h1>
 
-<div>@Model</div>
+<table>
+    <tr>
+        <td>Sale ID</td>
+        <td>@Model.SaleId</td>
+    </tr>
+    <tr>
+        <td>Seller</td>
+        <td>@Model.Seller</td>
+    </tr>
+    <tr>
+        <td>Buyer</td>
+        <td>@Model.Buyer</td>
+    </tr>
+    <tr>
+        <td>Description</td>
+        <td>@Model.Description</td>
+    </tr>
+    <tr>
+        <td>Price</td>
+        <td>@Model.Price</td>
+    </tr>
+    <tr>
+        <td>State</td>
+        <td>@Model.State</td>
+    </tr>
+</table>
 
-@* <form asp-action="CreateSale">
+@if (@Model.State != SaleViewModel.SaleState.New)
+{
+<div>Proceed to <a asp-action="SaleInfo" asp-route-id="@Model.SaleId">Sale Info</a></div>
+}
+else
+{
+<form asp-action="BuyerDeposit">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <input type="hidden" asp-for="SaleId" />
     <div class="form-group">
-        <label asp-for="Description" class="control-label"></label>
-        <input asp-for="Description" class="form-control" />
-        <span asp-validation-for="Description" class="text-danger"></span>
+        <input type="submit" value="Place Deposit" class="btn btn-primary" />
     </div>
-    <div class="form-group">
-        <label asp-for="Price" class="control-label"></label>
-        <input asp-for="Price" class="form-control" />
-        <span asp-validation-for="Price" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <input type="submit" value="Create" class="btn btn-primary" />
-    </div>
-</form> *@
+</form>
+
+<div>Proceed to <a asp-action="SaleInfo" asp-route-id="@Model.SaleId">Sale Info</a></div>
+@if (ViewBag.TransactionHash != null)
+{
+<div>View Application Log: <a asp-action="AppLog" asp-route-id="@ViewBag.TransactionHash">@ViewBag.TransactionHash</a></div>
+}
+}
