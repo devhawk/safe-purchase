@@ -39,27 +39,26 @@ namespace SafePuchaseWeb.Controllers
             return View(sale);
         }
 
-        static bool InitializeProtocolSettings(long magic)
+    
+        // TODO: remove CalculateHash when https://github.com/neo-project/neo/pull/1902 merges 
+        static UInt256 CalculateHash(IVerifiable verifiable, uint magic)
         {
-            IEnumerable<KeyValuePair<string, string>> settings()
+            return new UInt256(Neo.Cryptography.Crypto.Hash256(GetHashData(verifiable, magic)));
+
+            static byte[] GetHashData(IVerifiable verifiable, uint magic)
             {
-                yield return new KeyValuePair<string, string>(
-                    "ProtocolConfiguration:Magic", $"{magic}");
+                using var ms = new System.IO.MemoryStream();
+                using var writer = new System.IO.BinaryWriter(ms);
+                writer.Write(magic);
+                verifiable.SerializeUnsigned(writer);
+                writer.Flush();
+                return ms.ToArray();
             }
-
-            var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(settings())
-                .Build();
-
-            return ProtocolSettings.Initialize(config);
-
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateSale([Bind("Description,Price,SaleId")] CreateSaleViewModel model)
         {
-            InitializeProtocolSettings(2076676759);
-
             if (!ModelState.IsValid)
             {
                 return View(model); 
@@ -77,11 +76,12 @@ namespace SafePuchaseWeb.Controllers
                 script = sb.ToArray();
             }
 
+            uint magic = 2076676759;
             var keyPair = new KeyPair("b6e3d15d08dfd11cc43aca3c7bdb029d86c10014369749a300b9b3e9b5fef790".HexToBytes());
             var signers = new[] { new Signer { Account = seller, Scopes = WitnessScope.CalledByEntry }};
 
             var tx = await Task.Run(() => {
-                var tm = new TransactionManager(rpcClient)
+                var tm = new TransactionManager(rpcClient, magic)
                     .MakeTransaction(script, signers)
                     .AddSignature(keyPair)
                     .Sign();
@@ -89,7 +89,7 @@ namespace SafePuchaseWeb.Controllers
                 return tm.Tx;
             });
 
-            model.TransactionHash = tx.Hash;
+            model.TransactionHash = CalculateHash(tx, magic);
             return View(model);
         }
 
@@ -120,7 +120,7 @@ namespace SafePuchaseWeb.Controllers
             {
                 try
                 {
-                    return await Task.Run(() => rpcClient.RpcSend("getapplicationlog", id.ToString()));
+                    return rpcClient.RpcSend("getapplicationlog", id.ToString());
                 }
                 catch (Exception ex)
                 {
