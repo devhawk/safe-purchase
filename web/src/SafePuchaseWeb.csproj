@@ -10,8 +10,4 @@
     <PackageReference Include="Neo.Network.RPC.RpcClient" Version="3.0.2-preview3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\official\3neo-monorepo\modules\src\RpcClient\RpcClient.csproj" />
-  </ItemGroup>
-
 </Project>

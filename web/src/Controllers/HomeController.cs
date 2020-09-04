@@ -19,6 +19,8 @@ using SafePuchaseWeb.Models;
 
 namespace SafePuchaseWeb.Controllers
 {
+    using TransactionManager = SafePuchaseWeb.TransactionManager;
+    
     public static class Extensions
     {
         public static TransactionManager AddGas(this TransactionManager transactionManager, decimal gas)
