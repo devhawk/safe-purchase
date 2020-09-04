@@ -6,32 +6,7 @@
 
 <h1 class="display-4">Buyer Deposit</h1>
 
-<table>
-    <tr>
-        <td>Sale ID</td>
-        <td>@Model.SaleId</td>
-    </tr>
-    <tr>
-        <td>Seller</td>
-        <td>@Model.Seller</td>
-    </tr>
-    <tr>
-        <td>Buyer</td>
-        <td>@Model.Buyer</td>
-    </tr>
-    <tr>
-        <td>Description</td>
-        <td>@Model.Description</td>
-    </tr>
-    <tr>
-        <td>Price</td>
-        <td>@Model.Price</td>
-    </tr>
-    <tr>
-        <td>State</td>
-        <td>@Model.State</td>
-    </tr>
-</table>
+@await Html.PartialAsync("_SaleInfo", Model)
 
 @if (@Model.State != SaleViewModel.SaleState.New)
 {

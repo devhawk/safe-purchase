@@ -1,5 +1,30 @@
-﻿@{
+﻿@model SaleViewModel;
+
+@{
     ViewData["Title"] = "Confirmed Received";
 }
 
 <h1 class="display-4">Confirmed Received</h1>
+
+@await Html.PartialAsync("_SaleInfo", Model)
+
+@if (@Model.State != SaleViewModel.SaleState.ShipmentConfirmed)
+{
+<div>Proceed to <a asp-action="SaleInfo" asp-route-id="@Model.SaleId">Sale Info</a></div>
+}
+else
+{
+<form asp-action="ConfirmReceived">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="SaleId" />
+    <div class="form-group">
+        <input type="submit" value="Confirm Received" class="btn btn-primary" />
+    </div>
+</form>
+
+<div>Proceed to <a asp-action="SaleInfo" asp-route-id="@Model.SaleId">Sale Info</a></div>
+@if (ViewBag.TransactionHash != null)
+{
+<div>View Application Log: <a asp-action="AppLog" asp-route-id="@ViewBag.TransactionHash">@ViewBag.TransactionHash</a></div>
+}
+}

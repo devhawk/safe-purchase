@@ -124,7 +124,13 @@ namespace SafePuchaseWeb.Controllers
 
         public async Task<IActionResult> BuyerDeposit(Guid id)
         {
-            return View(await GetSaleViewModel(id));
+            var model = await GetSaleViewModel(id);
+            if (model == null)
+            {
+                RedirectToAction("SaleInfo", new { id });
+            }
+
+            return View(model);
         }
 
         [HttpPost]
@@ -163,15 +169,94 @@ namespace SafePuchaseWeb.Controllers
             return View(model);
         }
 
-
-        public IActionResult ConfirmShipment(Guid id)
+        public async Task<IActionResult> ConfirmShipment(Guid id)
         {
-            return View();
+            var model = await GetSaleViewModel(id);
+            if (model == null)
+            {
+                RedirectToAction("SaleInfo", new { id });
+            }
+
+            return View(model);
         }
 
-        public IActionResult ConfirmReceived(Guid id)
+        [HttpPost]
+        [ActionName(nameof(ConfirmShipment))]
+        public async Task<IActionResult> ConfirmShipmentPost(Guid id)
         {
-            return View();
+            var model = await GetSaleViewModel(id);
+            if (model == null)
+            {
+                return View(model);
+            }
+
+            var seller = neoExpress.GetWallet("seller").Default;
+
+            Script script;
+            {
+                using var sb = new ScriptBuilder();
+                sb.EmitAppCall(contractManifest.Hash, "confirmShipment", id.ToByteArray());
+                script = sb.ToArray();
+            }
+
+            var signers = new[] { new Signer { Account = seller.ScriptHash, Scopes = WitnessScope.CalledByEntry }};
+            var tx = await Task.Run(() => {
+                var tm = new TransactionManager(rpcClient, neoExpress.Magic)
+                    .MakeTransaction(script, signers)
+                    .AddSignature(seller.KeyPair)
+                    .AddGas(10)
+                    .Sign();
+                rpcClient.SendRawTransaction(tm.Tx);
+                return tm.Tx;
+            });
+
+            ViewBag.TransactionHash = CalculateHash(tx, neoExpress.Magic);
+            return View(model);
+        }
+
+        public async Task<IActionResult> ConfirmReceived(Guid id)
+        {
+            var model = await GetSaleViewModel(id);
+            if (model == null)
+            {
+                RedirectToAction("SaleInfo", new { id });
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ActionName(nameof(ConfirmReceived))]
+        public async Task<IActionResult> ConfirmReceivedPost(Guid id)
+        {
+            var model = await GetSaleViewModel(id);
+            if (model == null)
+            {
+                return View(model);
+            }
+
+            var buyer = neoExpress.GetWallet("buyer").Default;
+
+            Script script;
+            {
+                using var sb = new ScriptBuilder();
+                sb.EmitAppCall(contractManifest.Hash, "confirmReceived", id.ToByteArray());
+                script = sb.ToArray();
+            }
+
+            var signers = new[] { new Signer { Account = buyer.ScriptHash, Scopes = WitnessScope.CalledByEntry }};
+            var tx = await Task.Run(() => {
+                var tm = new TransactionManager(rpcClient, neoExpress.Magic)
+                    .MakeTransaction(script, signers)
+                    .AddSignature(buyer.KeyPair)
+                    .AddGas(10)
+                    .Sign();
+                rpcClient.SendRawTransaction(tm.Tx);
+                return tm.Tx;
+            });
+
+            ViewBag.TransactionHash = CalculateHash(tx, neoExpress.Magic);
+            return View(model);
         }
 
         public async Task<IActionResult> AppLog(string id)
