@@ -20,7 +20,7 @@ using SafePuchaseWeb.Models;
 namespace SafePuchaseWeb.Controllers
 {
     using TransactionManager = SafePuchaseWeb.TransactionManager;
-    
+
     public static class Extensions
     {
         public static TransactionManager AddGas(this TransactionManager transactionManager, decimal gas)
@@ -281,6 +281,18 @@ namespace SafePuchaseWeb.Controllers
                     }
                 });
             }
+        }
+
+        public async Task<IActionResult> Balance(string id)
+        {
+            var wallet = neoExpress.GetWallet(id);
+
+            var nep5 = new Nep5API(rpcClient);
+            var gasBalance = new BigDecimal(
+                nep5.BalanceOf(NativeContract.GAS.Hash, wallet.Default.ScriptHash), 
+                NativeContract.GAS.Decimals);
+
+            return View((wallet, gasBalance));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

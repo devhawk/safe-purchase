@@ -1,0 +1,9 @@
+@model (NeoExpress.Wallet wallet, Neo.BigDecimal gasBalance)
+@using Neo.Wallets
+
+@{
+    ViewData["Title"] = $"{Model.wallet.Name} balance";
+}
+
+<h1>@Model.wallet.Name Gas Balance</h1>
+<div>@Model.gasBalance @Model.wallet.Default.ScriptHash.ToAddress()</div>

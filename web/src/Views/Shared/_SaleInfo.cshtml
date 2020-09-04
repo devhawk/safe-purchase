@@ -1,4 +1,5 @@
 @model SaleViewModel?
+@using Neo.Wallets
 
 @if (@Model == null) 
 {
@@ -13,11 +14,11 @@ else
     </tr>
     <tr>
         <td>Seller</td>
-        <td>@Model.Seller</td>
+        <td>@Model.Seller.ToAddress())</td>
     </tr>
     <tr>
         <td>Buyer</td>
-        <td>@Model.Buyer</td>
+        <td>@Model.Buyer?.ToAddress()</td>
     </tr>
     <tr>
         <td>Description</td>
