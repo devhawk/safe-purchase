@@ -63,7 +63,9 @@
                 {
                     if (a["is-default"])
                     {
-                        select.append(`<option value="${a["script-hash"]}">${w.name}</option>`);
+                        var o = new Option(w.name, a["script-hash"]);
+                        $(o).html(w.name);
+                        select.append(o);
                     }
                 }
             }
