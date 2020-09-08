@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
-using System.Numerics;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Neo;
 using Neo.Network.P2P.Payloads;
@@ -14,7 +12,6 @@ using Neo.Network.RPC;
 using Neo.SmartContract.Manifest;
 using Neo.SmartContract.Native;
 using Neo.VM;
-using Neo.Wallets;
 using SafePuchaseWeb.Models;
 
 namespace SafePuchaseWeb.Controllers
@@ -38,19 +35,28 @@ namespace SafePuchaseWeb.Controllers
         private readonly NeoExpress neoExpress;
         private readonly ContractManifest contractManifest;
         private readonly IHttpClientFactory clientFactory;
+        private readonly IWebHostEnvironment webHostEnv;
         private readonly ILogger<HomeController> logger;
         private readonly RpcClient rpcClient;
 
-        public HomeController(NeoExpress neoExpress, ContractManifest contractManifest, IHttpClientFactory clientFactory, ILogger<HomeController> logger)
+        public HomeController(NeoExpress neoExpress, ContractManifest contractManifest, IHttpClientFactory clientFactory, IWebHostEnvironment webHostEnv, ILogger<HomeController> logger)
         {
             this.neoExpress = neoExpress;
             this.contractManifest = contractManifest;
             this.clientFactory = clientFactory;
+            this.webHostEnv = webHostEnv;
+
             this.logger = logger;
 
             var http = clientFactory.CreateClient();
             http.BaseAddress = new Uri($"http://localhost:{neoExpress.ConsensusNodes.First().RpcPort}");
             rpcClient = new RpcClient(http);
+        }
+
+        public IActionResult NeoExpress()
+        {
+            var neoExpressPath = System.IO.Path.Combine(webHostEnv.ContentRootPath, "../../default.neo-express");
+            return new PhysicalFileResult(neoExpressPath, "application/json");
         }
 
         public IActionResult Index()
@@ -90,7 +96,7 @@ namespace SafePuchaseWeb.Controllers
         }
     
         [HttpPost]
-        public async Task<IActionResult> CreateSale([Bind("Description,Price,SaleId")] CreateSaleViewModel model)
+        public async Task<IActionResult> CreateSale([Bind("Description,Price,SaleId,SellerAddress")] CreateSaleViewModel model)
         {
             if (!ModelState.IsValid)
             {
