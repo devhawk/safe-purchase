@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Numerics;
+using Neo;
 using Neo.SmartContract.Framework;
 using Neo.SmartContract.Framework.Services.Neo;
 using Neo.SmartContract.Framework.Services.System;
@@ -22,8 +23,8 @@ namespace SafePurchaseSample
     public class SaleInfo
     {
         public byte[] Id;
-        public byte[] Seller;
-        public byte[] Buyer;
+        public UInt160 Seller;
+        public UInt160 Buyer;
         public string Description;
         public BigInteger Price;
         public SaleState State;
@@ -32,21 +33,17 @@ namespace SafePurchaseSample
     [ManifestExtra("Author", "Harry Pierson")]
     [ManifestExtra("Email", "hpierson@ngd.neo.org")]
     [ManifestExtra("Description", "This is an example contract")]
-    [Features(ContractFeatures.HasStorage | ContractFeatures.Payable)]
+    // [Features(ContractFeatures.HasStorage | ContractFeatures.Payable)]
     public class SafePurchaseContract : SmartContract
     {
-        // Note, using GAS instead of NEO due to transfer issue in preview 3 debugger
-        //       using reversed GAS scriptHash string to work around issue in preview 3 HexToBytes 
-
-        static readonly byte[] GasToken = "0xbcaf41d684c7d4ad6ee0d99da9707b9d1f0c8e66".HexToBytes();
-        static readonly byte[] Owner = "NWoLj8g5Hr43B3CDkpMKDJFfBV3p6NM732".ToScriptHash();
+        static readonly UInt160 Owner = "NWoLj8g5Hr43B3CDkpMKDJFfBV3p6NM732".ToScriptHash();
         const string SALES_MAP_NAME = nameof(SafePurchaseContract);
 
         [DisplayName("NewSale")]
-        public static event Action<byte[], byte[], string, BigInteger> OnNewSale;
+        public static event Action<byte[], UInt160, string, BigInteger> OnNewSale;
 
         [DisplayName("SaleUpdated")]
-        public static event Action<byte[], byte[], byte> OnSaleUpdated;
+        public static event Action<byte[], UInt160, byte> OnSaleUpdated;
 
         [DisplayName("SaleCompleted")]
         public static event Action<byte[]> OnSaleCompleted;
@@ -63,7 +60,7 @@ namespace SafePurchaseSample
             BigInteger gas = 0;
             for (int i = 0; i < notifications.Length; i++)
             {
-                gas += GetTransactionAmount(notifications[i], GasToken);
+                gas += GetTransactionAmount(notifications[i], GAS.Hash);
             }
 
             if (gas != price * 2) throw new Exception("seller deposit must be 2x price");
@@ -95,7 +92,7 @@ namespace SafePurchaseSample
             BigInteger gas = 0;
             for (int i = 0; i < notifications.Length; i++)
             {
-                gas += GetTransactionAmount(notifications[i], GasToken);
+                gas += GetTransactionAmount(notifications[i], GAS.Hash);
             }
 
             if (gas != saleInfo.Price * 2) throw new Exception("buyer deposit must be 2x price");
@@ -134,8 +131,8 @@ namespace SafePurchaseSample
 
             if (!Runtime.CheckWitness(saleInfo.Buyer)) throw new Exception("must be buyer to confirm receipt");
 
-            Contract.Call(GasToken, "transfer", new object[] { ExecutionEngine.ExecutingScriptHash, saleInfo.Buyer, saleInfo.Price });
-            Contract.Call(GasToken, "transfer", new object[] { ExecutionEngine.ExecutingScriptHash, saleInfo.Seller, saleInfo.Price * 3 });
+            Contract.Call(GAS.Hash, "transfer", new object[] { ExecutionEngine.ExecutingScriptHash, saleInfo.Buyer, saleInfo.Price });
+            Contract.Call(GAS.Hash, "transfer", new object[] { ExecutionEngine.ExecutingScriptHash, saleInfo.Seller, saleInfo.Price * 3 });
 
             DeleteSale(saleInfo);
             OnSaleCompleted(saleInfo.Id);
@@ -167,7 +164,7 @@ namespace SafePurchaseSample
         }
 
 
-        private static BigInteger GetTransactionAmount(Notification notification, byte[] scriptHash)
+        private static BigInteger GetTransactionAmount(Notification notification, UInt160 scriptHash)
         {
             if (notification.ScriptHash != scriptHash) return 0;
             // Only allow Transfer notifications
@@ -176,7 +173,7 @@ namespace SafePurchaseSample
             // Checks notification format
             if (state.Length != 3) return 0;
             // Check dest
-            if ((byte[])state[1] != ExecutionEngine.ExecutingScriptHash) return 0;
+            if ((UInt160)state[1] != ExecutionEngine.ExecutingScriptHash) return 0;
             // Amount
             var amount = (BigInteger)state[2];
             if (amount < 0) return 0;
