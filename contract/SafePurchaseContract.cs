@@ -30,6 +30,7 @@ namespace SafePurchaseSample
         public SaleState State;
     }
 
+    [ManifestName("DevHawk.SafePurchase")]
     [ManifestExtra("Author", "Harry Pierson")]
     [ManifestExtra("Email", "hpierson@ngd.neo.org")]
     [ManifestExtra("Description", "This is an example contract")]
@@ -78,6 +79,11 @@ namespace SafePurchaseSample
             SaveSale(saleInfo);
             OnNewSale(saleInfo.Id, saleInfo.Seller, saleInfo.Description, saleInfo.Price);
             return true;
+        }
+
+        public static void OnPayment(UInt160 from, BigInteger amount, object data)
+        {
+            Runtime.Log("OnPayment");
         }
 
         public static bool BuyerDeposit(byte[] saleId)
@@ -131,8 +137,8 @@ namespace SafePurchaseSample
 
             if (!Runtime.CheckWitness(saleInfo.Buyer)) throw new Exception("must be buyer to confirm receipt");
 
-            Contract.Call(GAS.Hash, "transfer", new object[] { ExecutionEngine.ExecutingScriptHash, saleInfo.Buyer, saleInfo.Price });
-            Contract.Call(GAS.Hash, "transfer", new object[] { ExecutionEngine.ExecutingScriptHash, saleInfo.Seller, saleInfo.Price * 3 });
+            GAS.Transfer(ExecutionEngine.ExecutingScriptHash, saleInfo.Buyer, saleInfo.Price, null);
+            GAS.Transfer(ExecutionEngine.ExecutingScriptHash, saleInfo.Seller, saleInfo.Price * 3, null);
 
             DeleteSale(saleInfo);
             OnSaleCompleted(saleInfo.Id);
@@ -148,7 +154,13 @@ namespace SafePurchaseSample
 
             var salesMap = Storage.CurrentContext.CreateMap(SALES_MAP_NAME);
             var result = salesMap.Get(saleId);
-            return result == null ? null : result.Deserialize() as SaleInfo;
+            if (result == null)
+            {
+                return null;
+            }
+
+            var zzz = result.Deserialize();
+            return zzz as SaleInfo;
         }
 
         private static void SaveSale(SaleInfo saleInfo)

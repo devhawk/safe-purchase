@@ -1,15 +1,16 @@
 [
     {
-        "contract": "0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc",
+        "contract": "GAS",
         "operation": "transfer",
         "args": [
             "@NajmT8yKhtCcM48K8eCo8daWFtdgCTfmuR",
-            "#../contract/bin/Debug/netstandard2.1/safe-purchase.nef",
-            100
+            "#DevHawk.SafePurchase",
+            100,
+            null
         ]
     },
     {
-        "contract": "../contract/bin/Debug/netstandard2.1/safe-purchase.nef",
+        "contract": "DevHawk.SafePurchase",
         "operation": "createSale",
         "args": [
             "0xc977a809e5014ed49192919eb6beed15",
