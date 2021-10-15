@@ -80,7 +80,13 @@ namespace NgdEnterprise.Samples
 
         public static void OnNEP17Payment(UInt160 from, BigInteger amount, object[] data)
         {
-            if (from == null || data == null) return;
+            if (from == null && Runtime.CallingScriptHash == GAS.Hash)
+            {
+                // When NEO balance changes, the contract receives GAS from the platform
+                // Ignore this payment for purposes of selling/buying items
+                return;
+            }
+
             if (from == null) throw new ArgumentNullException(nameof(from));
             if (data == null) throw new ArgumentNullException(nameof(data));
             if (data.Length < 2) throw new Exception("Invalid transfer data length");
