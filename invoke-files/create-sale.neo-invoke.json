@@ -1,21 +1,17 @@
 [
     {
-        "contract": "GAS",
+        "contract": "NeoToken",
         "operation": "transfer",
         "args": [
-            "@NajmT8yKhtCcM48K8eCo8daWFtdgCTfmuR",
-            "#DevHawk.SafePurchase",
+            "@seller",
+            "#SafePurchase",
             100,
-            null
-        ]
-    },
-    {
-        "contract": "DevHawk.SafePurchase",
-        "operation": "createSale",
-        "args": [
-            "0xc977a809e5014ed49192919eb6beed15",
-            50,
-            "a widget"
+            [
+                "createSale",
+                50,
+                "A widget",
+                "0x1ade71963cf84ce29856891bedd12e4e"
+            ]
         ]
     }
 ]

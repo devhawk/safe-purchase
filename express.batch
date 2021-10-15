@@ -1,0 +1,8 @@
+transfer 10000 neo genesis owner
+transfer 10000 gas genesis owner
+transfer 10000 neo genesis buyer
+transfer 10000 gas genesis buyer
+transfer 10000 neo genesis seller
+transfer 10000 gas genesis seller
+contract deploy ./contract/bin/sc/SafePurchase.nef owner
+checkpoint create ./checkpoints/contract-deployed -f

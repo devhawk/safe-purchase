@@ -2,16 +2,22 @@
   "version": 1,
   "isRoot": true,
   "tools": {
-    "neo.express3": {
-      "version": "1.2.56-insiders",
+    "neo.express": {
+      "version": "3.0.21",
       "commands": [
-        "nxp3"
+        "neoxp"
       ]
     },
-    "neo.neon": {
-      "version": "3.0.0-mono-master-00344",
+    "neo.compiler.csharp": {
+      "version": "3.0.3",
       "commands": [
-        "neon"
+        "nccs"
+      ]
+    },
+    "neo.trace": {
+      "version": "3.0.21",
+      "commands": [
+        "neotrace"
       ]
     }
   }
