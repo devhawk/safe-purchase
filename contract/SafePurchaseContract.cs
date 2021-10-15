@@ -11,6 +11,8 @@ using Neo.SmartContract.Framework.Services;
 //       https://github.com/Splyse/MCT/blob/master/safe-remote-purchase.py
 // Ported from python to C# by Harry Pierson (aka DevHawk)
 
+#nullable enable
+
 namespace NgdEnterprise.Samples
 {
     public enum SaleState : byte
