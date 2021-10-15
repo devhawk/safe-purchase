@@ -11,28 +11,47 @@
             "request": "launch",
             "program": "${workspaceFolder}/contract/bin/sc/SafePurchase.nef",
             "neo-express": "${workspaceFolder}/default.neo-express",
-            "checkpoint": "${workspaceFolder}/checkpoints/contract-deployed.neoxp-checkpoint",
+            "checkpoint": "${workspaceFolder}/checkpoints/1-contract-deployed.neoxp-checkpoint",
             "invocation": {
                 "invoke-file": "${workspaceFolder}/invoke-files/create-sale.neo-invoke.json"
             },
-            "signers": [ "@seller" ],
+            "signers": [
+                "@seller"
+            ],
         },
-        // {
-        //     "name": "buyer-deposit",
-        //     "type": "neo-contract",
-        //     "request": "launch",
-        //     "program": "${workspaceFolder}/contract/bin/Debug/netstandard2.1/safe-purchase.nef",
-        //     "invocation": {
-        //         "invokeFile": "${workspaceFolder}/invoke-files/buyer-deposit.neo-invoke.json",
-        //     },
-        //     "checkpoint": "${workspaceFolder}/checkpoints/buyer-deposit.nxp3-checkpoint",
-        //     "signers": [ "NaYLUBF9TuBrkXWHDcefRi3rAr4jBtYwyG" ],
-        //     "runtime": {
-        //         "witnesses": {
-        //             "check-result": true
-        //         }
-        //     }
-        // },
+        {
+            "name": "sales",
+            "type": "neo-contract",
+            // "preLaunchTask": "build",
+            "request": "launch",
+            "program": "${workspaceFolder}/contract/bin/sc/SafePurchase.nef",
+            "neo-express": "${workspaceFolder}/default.neo-express",
+            "checkpoint": "${workspaceFolder}/checkpoints/2-create-sale.neoxp-checkpoint",
+            "invocation": {
+                "operation": "sales",
+                "args": [
+                    "@seller"
+                ]
+            },
+            "signers": [
+                "@buyer"
+            ]
+        },
+        {
+            "name": "buyer-deposit",
+            "type": "neo-contract",
+            // "preLaunchTask": "build",
+            "request": "launch",
+            "program": "${workspaceFolder}/contract/bin/sc/SafePurchase.nef",
+            "neo-express": "${workspaceFolder}/default.neo-express",
+            "checkpoint": "${workspaceFolder}/checkpoints/2-create-sale.neoxp-checkpoint",
+            "invocation": {
+                "invoke-file": "${workspaceFolder}/invoke-files/buyer-deposit.neo-invoke.json",
+            },
+            "signers": [
+                "@buyer"
+            ]
+        },
         // {
         //     "name": "confirm-shipment",
         //     "type": "neo-contract",

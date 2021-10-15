@@ -4,5 +4,18 @@ transfer 10000 neo genesis buyer
 transfer 10000 gas genesis buyer
 transfer 10000 neo genesis seller
 transfer 10000 gas genesis seller
+
 contract deploy ./contract/bin/sc/SafePurchase.nef owner
-checkpoint create ./checkpoints/contract-deployed -f
+checkpoint create ./checkpoints/1-contract-deployed -f
+
+contract invoke ./invoke-files/create-sale.neo-invoke.json seller
+checkpoint create ./checkpoints/2-create-sale -f
+
+#contract invoke ./invoke-files/buyer-deposit.neo-invoke.json buyer
+#checkpoint create ./checkpoints/3-buyer-deposit -f
+
+#contract invoke ./invoke-files/confirm-shipment.neo-invoke.json seller
+#checkpoint create ./checkpoints/4.confirm-shipment -f
+
+#contract invoke ./invoke-files/confirm-received.neo-invoke.json buyer
+#checkpoint create ./checkpoints/5.confirm-received -f

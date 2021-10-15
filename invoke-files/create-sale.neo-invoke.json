@@ -1,17 +1,15 @@
-[
-    {
-        "contract": "NeoToken",
-        "operation": "transfer",
-        "args": [
-            "@seller",
-            "#SafePurchase",
-            100,
-            [
-                "createSale",
-                50,
-                "A widget",
-                "0x1ade71963cf84ce29856891bedd12e4e"
-            ]
+{
+    "contract": "NeoToken",
+    "operation": "transfer",
+    "args": [
+        "@seller",
+        "#SafePurchase",
+        100,
+        [
+            "CreateSale",
+            50,
+            "A widget",
+            "0x1ade71963cf84ce29856891bedd12e4e"
         ]
-    }
-]
+    ]
+}
