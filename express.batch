@@ -11,11 +11,11 @@ checkpoint create ./checkpoints/1-contract-deployed -f
 contract invoke ./invoke-files/create-sale.neo-invoke.json seller
 checkpoint create ./checkpoints/2-create-sale -f
 
-#contract invoke ./invoke-files/buyer-deposit.neo-invoke.json buyer
-#checkpoint create ./checkpoints/3-buyer-deposit -f
+contract invoke ./invoke-files/buyer-deposit.neo-invoke.json buyer
+checkpoint create ./checkpoints/3-buyer-deposit -f
 
-#contract invoke ./invoke-files/confirm-shipment.neo-invoke.json seller
-#checkpoint create ./checkpoints/4.confirm-shipment -f
+contract invoke ./invoke-files/confirm-shipment.neo-invoke.json seller
+checkpoint create ./checkpoints/4.confirm-shipment -f
 
-#contract invoke ./invoke-files/confirm-received.neo-invoke.json buyer
-#checkpoint create ./checkpoints/5.confirm-received -f
+contract invoke ./invoke-files/confirm-received.neo-invoke.json buyer
+checkpoint create ./checkpoints/5.confirm-received -f

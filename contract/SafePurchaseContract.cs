@@ -33,11 +33,7 @@ namespace NgdEnterprise.Samples
             public SaleState State;
         }
 
-    // [ManifestName("DevHawk.SafePurchase")]
-    // [ManifestExtra("Author", "Harry Pierson")]
-    // [ManifestExtra("Email", "hpierson@ngd.neo.org")]
-    // [ManifestExtra("Description", "This is an example contract")]
-    // [Features(ContractFeatures.HasStorage | ContractFeatures.Payable)]
+    [ContractPermission("*", "transfer")]
     public class SafePurchaseContract : SmartContract
     {
         const byte Prefix_Sales = 0x00;
@@ -191,9 +187,9 @@ namespace NgdEnterprise.Samples
             if (!Runtime.CheckWitness(saleInfo.Buyer)) throw new Exception("only buyer can confirm receipt");
 
             Contract.Call(saleInfo.Token, "transfer", CallFlags.All,
-                Runtime.ExecutingScriptHash, saleInfo.Buyer, saleInfo.Price);
+                Runtime.ExecutingScriptHash, saleInfo.Buyer, saleInfo.Price, null);
             Contract.Call(saleInfo.Token, "transfer", CallFlags.All,
-                Runtime.ExecutingScriptHash, saleInfo.Seller, saleInfo.Price * 3);
+                Runtime.ExecutingScriptHash, saleInfo.Seller, saleInfo.Price * 3, null);
 
             salesMap.Delete(saleId);
             StorageMap accountMap = new(Storage.CurrentContext, Prefix_AccountSales);
