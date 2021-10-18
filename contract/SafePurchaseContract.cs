@@ -129,6 +129,10 @@ namespace NgdEnterprise.Samples
                 saleId = CryptoLib.Sha256(StdLib.Serialize(saleHash));
             }
 
+            StorageMap salesMap = new(Storage.CurrentContext, Prefix_Sales);
+            var serializedSale = salesMap.Get(saleId);
+            if (serializedSale != null) throw new Exception("specified saleId already exists");
+
             var saleInfo = new SaleInfo();
             saleInfo.Seller = seller;
             saleInfo.Description = description;
@@ -136,7 +140,6 @@ namespace NgdEnterprise.Samples
             saleInfo.Token = token;
             saleInfo.State = SaleState.New;
 
-            StorageMap salesMap = new(Storage.CurrentContext, Prefix_Sales);
             salesMap.Put(saleId, StdLib.Serialize(saleInfo));
 
             StorageMap accountMap = new(Storage.CurrentContext, Prefix_AccountSales);
