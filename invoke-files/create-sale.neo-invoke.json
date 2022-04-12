@@ -6,7 +6,7 @@
         "#SafePurchase",
         100,
         [
-            "CreateSale",
+            "CreateSales",
             50,
             "A widget",
             "0x1ade71963cf84ce29856891bedd12e4e"

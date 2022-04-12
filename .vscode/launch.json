@@ -7,11 +7,11 @@
         {
             "name": "create-sale",
             "type": "neo-contract",
-            "preLaunchTask": "build",
+            // "preLaunchTask": "build",
             "request": "launch",
             "program": "${workspaceFolder}/contract/bin/sc/SafePurchase.nef",
             "neo-express": "${workspaceFolder}/default.neo-express",
-            "checkpoint": "${workspaceFolder}/checkpoints/1-contract-deployed.neoxp-checkpoint",
+            "checkpoint": "${workspaceFolder}/checkpoints/2-create-sale.neoxp-checkpoint",
             "invocation": {
                 "invoke-file": "${workspaceFolder}/invoke-files/create-sale.neo-invoke.json"
             },
@@ -81,6 +81,16 @@
             "signers": [
                 "@buyer"
             ]
+        },
+        {
+            "name": "trace",
+            "type": "neo-contract",
+            // "preLaunchTask": "build",
+            "request": "launch",
+            "program": "${workspaceFolder}/contract/bin/sc/SafePurchase.nef",
+            "invocation": {
+                "trace-file": "${workspaceFolder}/0x77df9a094c3c7c6c3542a56273e7e0fe6fd069d8e98c45d79bc0884d0513cf46.neo-trace",
+            }
         }
     ]
 }
