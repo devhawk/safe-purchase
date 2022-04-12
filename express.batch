@@ -5,7 +5,7 @@ transfer 10000 gas genesis buyer
 transfer 10000 neo genesis seller
 transfer 10000 gas genesis seller
 
-contract deploy ./contract/bin/sc/SafePurchase.nef owner
+contract deploy ./src/bin/sc/SafePurchase.nef owner
 checkpoint create ./checkpoints/1-contract-deployed -f
 
 contract invoke ./invoke-files/create-sale.neo-invoke.json seller

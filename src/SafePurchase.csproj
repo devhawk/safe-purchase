@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <NeoContractName>SafePurchase</NeoContractName>
+    <NeoExpressBatchFile>..\express.batch</NeoExpressBatchFile>
+    <Nullable>enable</Nullable>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Neo.BuildTasks" Version="3.2.10-preview" PrivateAssets="All" />
+    <PackageReference Include="Neo.SmartContract.Framework" Version="3.1.0" />
+  </ItemGroup>
+
+</Project>
