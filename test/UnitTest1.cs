@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace test;
+namespace DevHawk.ContractTests;
 
 public class UnitTest1
 {

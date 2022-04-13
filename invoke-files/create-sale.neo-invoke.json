@@ -1,3 +1,4 @@
+[
 {
     "contract": "NeoToken",
     "operation": "transfer",
@@ -6,10 +7,11 @@
         "#SafePurchase",
         100,
         [
-            "CreateSale",
-            50,
-            "A widget",
-            "0x1ade71963cf84ce29856891bedd12e4e"
+          "CreateSale",
+          50,
+          "A widget",
+          "0x1ade71963cf84ce29856891bedd12e4e"
         ]
     ]
 }
+]
